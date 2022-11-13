@@ -1,4 +1,3 @@
-# import sys, os
 import curses
 import time
 import random
@@ -29,7 +28,6 @@ class Egg:
 
     def render(self, stdscr):
         stdscr.attron(curses.color_pair(1))
-        # stdscr.attron(curses.A_BOLD)
         stdscr.addstr(self.y, self.x, self.animation[self.phase])
 
 
@@ -96,13 +94,10 @@ class Snake:
 
     def render(self, f):
         """Draw the snake on the parm image frame."""
-        # Set the head to max brightness.
         x, y = self.head()
-        # f.set_pixel(x, y, 9)
         f.attron(curses.color_pair(2))
         f.attron(curses.A_BOLD)
         f.addstr(y, x, self.head_chars[self.direction])
-        # f.addstr(y, x, '○')
 
         # Skip the last element of list (which is the head).
         for (x, y) in self.segments[:-1]:
@@ -110,15 +105,10 @@ class Snake:
             f.addstr(y, x, self.body_chars[(p, c)])
 
     def move(self, w, h):
-
-
-
-        # First, try heading straight ahead.
         x, y = self.head()
         self.segment_dirs[(x, y)] = (self.prev_direction, self.direction)
 
-
-
+        # First, try heading straight ahead.
         d = self.direction
         px, py = self.next(x, y, d)
 
@@ -174,7 +164,6 @@ def draw_menu(stdscr):
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
 
     eggs = []
-
     snake = Snake()
 
     # Loop where k is the last character pressed
