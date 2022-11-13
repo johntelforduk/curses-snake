@@ -3,7 +3,7 @@ import curses
 import time
 import random
 
-HEARTBEAT = 50  # Number of milliseconds between each heartbeat.
+HEARTBEAT = 15  # Number of milliseconds between each heartbeat.
 NUM_EGGS = 100
 
 
@@ -14,7 +14,7 @@ class Egg:
 
         self.animation = '-\\|/-\\|/'
         self.phase = random.randrange(len(self.animation))
-        self.speed = 150        # Milliseconds between each phase of animation.
+        self.speed = 250        # Milliseconds between each phase of animation.
 
         # Making the timers start at a random number means the spinning eggs spinning are not synchronised.
         self.timer = random.randrange(self.speed)           # Internal timer of each egg.
@@ -29,24 +29,40 @@ class Egg:
 
     def render(self, stdscr):
         stdscr.attron(curses.color_pair(1))
-        stdscr.attron(curses.A_BOLD)
+        # stdscr.attron(curses.A_BOLD)
         stdscr.addstr(self.y, self.x, self.animation[self.phase])
 
 
 class Snake:
     def __init__(self):
 
-        self.speed = 150                                    # Milliseconds between each move of head.
+        self.speed = 15                                    # Milliseconds between each move of head.
         self.timer = 0
-
-        self.segments = [(5, 5)]                            # Start with just a head segment.
 
         # 0 = East, 1 = South, 2 = West, 3 = North.
         self.deltas = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.direction = 0
+        self.prev_direction = 0
+
+        self.segments = [(5, 5)]                            # Start with just a head segment.
+        self.segment_dirs = {(5, 5): (self.prev_direction, self.direction)}
 
         self.eaten_egg = False
         self.dead = False
+
+        self.head_chars = '▶▼◀▲'
+        self.body_chars = {(0, 0): '─',
+                           (0, 1): '┐',
+                           (0, 3): '┘',
+                           (1, 0): '└',
+                           (1, 1): '│',
+                           (1, 2): '┘',
+                           (2, 1): '┌',
+                           (2, 2): '─',
+                           (2, 3): '└',
+                           (3, 0): '┌',
+                           (3, 2): '┐',
+                           (3, 3): '│'}
 
     @staticmethod
     def clockwise(d: int) -> int:
@@ -85,21 +101,24 @@ class Snake:
         # f.set_pixel(x, y, 9)
         f.attron(curses.color_pair(2))
         f.attron(curses.A_BOLD)
-        f.addstr(y, x, 'O')
+        f.addstr(y, x, self.head_chars[self.direction])
+        # f.addstr(y, x, '○')
 
         # Skip the last element of list (which is the head).
-        # Make the body of the snake a little less bright than the head.
         for (x, y) in self.segments[:-1]:
-            # frame.set_pixel(x, y, 7)
-            f.addstr(y, x, '*')
+            p, c = self.segment_dirs[(x, y)]
+            f.addstr(y, x, self.body_chars[(p, c)])
 
     def move(self, w, h):
-        # if microbit.button_a.was_pressed():
-        #     self.direction = self.anti_clockwise(self.direction)
-        # if microbit.button_b.was_pressed():
-        #     self.direction = self.clockwise(self.direction)
+
+
+
         # First, try heading straight ahead.
         x, y = self.head()
+        self.segment_dirs[(x, y)] = (self.prev_direction, self.direction)
+
+
+
         d = self.direction
         px, py = self.next(x, y, d)
 
@@ -130,6 +149,8 @@ class Snake:
                 self.eaten_egg = False
             else:
                 del self.segments[0]
+
+        self.prev_direction = self.direction
 
     def tick(self, w, h):
         self.timer += HEARTBEAT
