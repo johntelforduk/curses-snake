@@ -2,7 +2,7 @@ import curses
 import time
 import random
 
-HEARTBEAT = 15  # Number of milliseconds between each heartbeat.
+HEARTBEAT = 100  # Number of milliseconds between each heartbeat.
 NUM_EGGS = 100
 
 
